@@ -18,6 +18,8 @@ var Client = function(socket)
 {
   this.socket = socket;
   this.name = this.socket.id;
+  this.authenticated = false;
+
   clients.push(this);
 
   this.remove = function()
@@ -53,13 +55,28 @@ function notifyDisconnect(client)
 
 io.on('connection', function(socket)
 {
-  console.log('User connected: ' + socket.conn.remoteAddress);
   var client = new Client(socket);
-  notifyConnect(client);
+
+  console.log('User connected: ' + client.name);
 
   socket.on('disconnect', function()
   {
-    notifyDisconnect(client);
+    console.log('User disconnected: ' + client.name);
+
+    if(client.authenticated)
+    {
+      notifyDisconnect(client);
+    }
+
     client.remove();
+  });
+
+  socket.on('authenticate', function(data)
+  {
+    console.log('User authenticated: ' + client.name + " as " + data);
+    client.name = data;
+    client.authenticated = true;
+
+    notifyConnect(client);
   });
 });
