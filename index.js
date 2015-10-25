@@ -2,17 +2,23 @@ var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
+var clients = [];
+
 app.get('/', function(req, res)
 {
-  res.send('Nothing here. This is just a tiny backend :)');
+  var playerList = "<br><br>Players:<br>";
+
+  for(var i = 0;i < clients.length; i++) {
+    playerList += "<br>" + clients[i].id + " " + clients[i].name;
+  }
+
+  res.send('Nothing here. This is just a tiny backend :)' + playerList);
 });
 
 http.listen(88, function()
 {
   console.log('listening on *:88');
 });
-
-var clients = [];
 
 var Client = function(socket)
 {
