@@ -17,7 +17,7 @@ var clients = [];
 var Client = function(socket)
 {
   this.socket = socket;
-  this.name = this.socket.id;
+  this.id = this.socket.id;
   this.authenticated = false;
 
   clients.push(this);
@@ -33,9 +33,9 @@ var Client = function(socket)
 
 function notifyConnect(client)
 {
-  for(var i = 0; i< clients.length; i++)
+  for (var i = 0; i < clients.length; i++)
   {
-    if(clients[i] != client)
+    if (clients[i] != client)
     {
       clients[i].socket.emit("user_connect", client.name);
     }
@@ -44,9 +44,9 @@ function notifyConnect(client)
 
 function notifyDisconnect(client)
 {
-  for(var i = 0; i< clients.length; i++)
+  for (var i = 0; i < clients.length; i++)
   {
-    if(clients[i] != client)
+    if (clients[i] != client)
     {
       clients[i].socket.emit("user_disconnect", client.name);
     }
@@ -57,13 +57,13 @@ io.on('connection', function(socket)
 {
   var client = new Client(socket);
 
-  console.log('User connected: ' + client.name);
+  console.log('User connected: ' + client.id);
 
   socket.on('disconnect', function()
   {
-    console.log('User disconnected: ' + client.name);
+    console.log('User disconnected: ' + client.id + ' (' + client.name + ')');
 
-    if(client.authenticated)
+    if (client.authenticated)
     {
       notifyDisconnect(client);
     }
@@ -73,7 +73,7 @@ io.on('connection', function(socket)
 
   socket.on('authenticate', function(data)
   {
-    console.log('User authenticated: ' + client.name + " as " + data);
+    console.log('User authenticated: ' + client.id + " as " + data);
     client.name = data;
     client.authenticated = true;
 
