@@ -59,6 +59,17 @@ function notifyDisconnect(client)
   }
 }
 
+function notifyChat(client, data)
+{
+  for (var i = 0; i < clients.length; i++)
+  {
+    if (clients[i] != client)
+    {
+      clients[i].socket.emit("chatmessage", {user: client.name, message: data});
+    }
+  }
+}
+
 io.on('connection', function(socket)
 {
   var client = new Client(socket);
@@ -77,8 +88,18 @@ io.on('connection', function(socket)
     client.remove();
   });
 
+  socket.on('chatmessage', function(data)
+  {
+    if(!client.authenticated) return;
+
+    console.log(client.name + ': ' + data);
+    notifyChat(client, data);
+  });
+
   socket.on('authenticate', function(data)
   {
+    if(client.authenticated) return;
+
     console.log('User authenticated: ' + client.id + " as " + data);
     client.name = data;
     client.authenticated = true;
