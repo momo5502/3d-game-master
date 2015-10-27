@@ -106,6 +106,7 @@ function generateStates(client)
       state.origin = clients[i].origin;
       state.angles = clients[i].angles;
       state.id = clients[i].id;
+      state.name = clients[i].name;
       states.push(state);
     }
   }
