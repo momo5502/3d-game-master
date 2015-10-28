@@ -143,8 +143,6 @@ io.on('connection', function(socket)
   {
     if (!client.authenticated) return;
     client.matrix = data;
-
-    distributeStates();
   });
 
   socket.on('authenticate', function(data)
@@ -158,3 +156,8 @@ io.on('connection', function(socket)
     notifyConnect(client);
   });
 });
+
+setInterval(function()
+{
+  distributeStates();
+}, 1000 / 60);
