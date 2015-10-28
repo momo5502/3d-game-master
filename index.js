@@ -91,7 +91,7 @@ function generateStates(client)
   var states = [];
   for(var i = 0; i < clients.length; i++)
   {
-    if(clients[i] != client)
+    if(clients[i] != client && clients[i].authenticated)
     {
       var state = {};
       state.matrix = clients[i].matrix;
