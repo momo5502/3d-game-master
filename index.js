@@ -26,16 +26,7 @@ var Client = function(socket)
   this.socket = socket;
   this.id = this.socket.id;
   this.authenticated = false;
-  this.origin = {
-    x: 0,
-    y: 0,
-    z: 0
-  };
-  this.angles = {
-    x: 0,
-    y: 0,
-    z: 0
-  };
+  this.matrix = null;
 
   clients.push(this);
 
@@ -103,8 +94,7 @@ function generateStates(client)
     if(clients[i] != client)
     {
       var state = {};
-      state.origin = clients[i].origin;
-      state.angles = clients[i].angles;
+      state.matrix = clients[i].matrix;
       state.id = clients[i].id;
       state.name = clients[i].name;
       states.push(state);
@@ -152,8 +142,7 @@ io.on('connection', function(socket)
   socket.on('playerstate', function(data)
   {
     if (!client.authenticated) return;
-    client.origin = data.origin;
-    client.angles = data.angles;
+    client.matrix = data;
 
     distributeStates();
   });
