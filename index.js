@@ -1,6 +1,7 @@
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var chalk = require('chalk');
 
 var clients = [];
 
@@ -18,7 +19,7 @@ app.get('/', function(req, res)
 
 http.listen(88, function()
 {
-  console.log('listening on *:88');
+  console.log(chalk.cyan('listening on *:88'));
 });
 
 var Client = function(socket)
