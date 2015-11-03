@@ -1,98 +1,21 @@
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var chalk = require('chalk');
 
-var clients = [];
+// Load components
+require('require-dir')("components");
 
-app.get('/', function(req, res)
-{
-  var playerList = "<br><br>Players:<br>";
+console.info("3D-Game-Master starting...");
 
-  for (var i = 0; i < clients.length; i++)
-  {
-    playerList += "<br>" + clients[i].id + " " + clients[i].name;
-  }
-
-  res.send('Nothing here. This is just a tiny backend :)' + playerList);
-});
-
-http.listen(88, function()
-{
-  console.log(chalk.cyan('listening on *:88'));
-});
-
-var Client = function(socket)
-{
-  this.socket = socket;
-  this.id = this.socket.id;
-  this.authenticated = false;
-  this.matrix = null;
-
-  clients.push(this);
-
-  this.remove = function()
-  {
-    var i = clients.indexOf(this);
-    clients.splice(i, 1);
-  };
-
-  socket.clientObj = this;
-}
-
-function notifyConnect(client)
-{
-  for (var i = 0; i < clients.length; i++)
-  {
-    if (clients[i] != client)
-    {
-      clients[i].socket.emit("user_connect",
-      {
-        name: client.name,
-        id: client.id
-      });
-    }
-  }
-}
-
-function notifyDisconnect(client)
-{
-  for (var i = 0; i < clients.length; i++)
-  {
-    if (clients[i] != client)
-    {
-      clients[i].socket.emit("user_disconnect",
-      {
-        name: client.name,
-        id: client.id
-      });
-    }
-  }
-}
-
-function notifyChat(client, data)
-{
-  for (var i = 0; i < clients.length; i++)
-  {
-    if (clients[i] != client)
-    {
-      clients[i].socket.emit("chatmessage",
-      {
-        name: client.name,
-        id: client.id,
-        message: data
-      });
-    }
-  }
-}
+Webserver(app, http, 88);
 
 // Pretty bad way to generate states, but
 function generateStates(client)
 {
   var states = [];
-  for(var i = 0; i < clients.length; i++)
+  for (var i = 0; i < clients.length; i++)
   {
-    if(clients[i] != client && clients[i].authenticated)
+    if (clients[i] != client && clients[i].authenticated)
     {
       var state = {};
       state.matrix = clients[i].matrix;
@@ -103,15 +26,6 @@ function generateStates(client)
   }
 
   return states;
-}
-
-function distributeStates()
-{
-  for(var i = 0; i < clients.length; i++)
-  {
-    var states = generateStates(clients[i]);
-    clients[i].socket.emit("playerstates", states);
-  }
 }
 
 io.on('connection', function(socket)
@@ -126,7 +40,11 @@ io.on('connection', function(socket)
 
     if (client.authenticated)
     {
-      notifyDisconnect(client);
+      clients.broadcast("user_disconnect",
+      {
+        name: client.name,
+        id: client.id
+      }, client);
     }
 
     client.remove();
@@ -136,8 +54,14 @@ io.on('connection', function(socket)
   {
     if (!client.authenticated) return;
 
-    console.log(client.name + ': ' + data);
-    notifyChat(client, data);
+    console.info(client.name + ': ' + data);
+
+    clients.broadcast("chatmessage",
+    {
+      name: client.name,
+      id: client.id,
+      message: data
+    }, client);
   });
 
   socket.on('playerstate', function(data)
@@ -154,11 +78,15 @@ io.on('connection', function(socket)
     client.name = data;
     client.authenticated = true;
 
-    notifyConnect(client);
+    clients.broadcast("user_connect",
+    {
+      name: client.name,
+      id: client.id
+    }, client);
   });
 });
 
 setInterval(function()
 {
-  distributeStates();
+  clients.broadcast("playerstates", generateStates);
 }, 1000 / 60);
