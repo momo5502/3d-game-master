@@ -1,15 +1,16 @@
-var app = require('express')();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
-
 // Load components
 require('require-dir')("components");
 
 console.info("3D-Game-Master starting...");
 
-Webserver(app, http, 88);
+var socket = new Socket();
+var webserver = new Webserver(88);
+webserver.init(function()
+{
+  socket.bind(this);
+});
 
-// Pretty bad way to generate states, but
+// Pretty bad way to generate states, but whatever
 function generateStates(client)
 {
   var states = [];
@@ -28,7 +29,7 @@ function generateStates(client)
   return states;
 }
 
-io.on('connection', function(socket)
+socket.on('connection', function(socket)
 {
   var client = new Client(socket);
 

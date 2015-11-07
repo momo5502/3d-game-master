@@ -4,7 +4,7 @@
 
   root.clients = new Array();
 
-  root.Client = function(socket)
+  function Client(socket)
   {
     this.socket = socket;
     this.id = this.socket.id;
@@ -47,4 +47,6 @@
       }
     }
   }
+
+  root.Client = Client;
 })();
