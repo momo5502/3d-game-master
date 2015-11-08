@@ -11,7 +11,9 @@ var zlib = require("zlib");
 
   ENGINE.Database = {
     path: "data/",
-    file: "db.bin"
+    subdir: "db/",
+    extension: ".db",
+    index: "db.json"
   };
 
   var worker = undefined;
@@ -29,19 +31,26 @@ var zlib = require("zlib");
     worker = setInterval(storageWorker, 10000);
 
     console.log("Database initialized");
+    console.logNative(dbObj);
   };
 
   ENGINE.Database.store = function()
   {
-    var string = JSON.stringify(dbObj);
-    var data = zlib.deflateSync(string);
-
     if (!fs.existsSync(ENGINE.Database.path))
     {
       fs.mkdirSync(ENGINE.Database.path);
     }
 
-    fs.writeFileSync(ENGINE.Database.path + ENGINE.Database.file, data);
+    // Store databases
+    var keys = Object.keys(dbObj);
+    keys.forEach(function(key)
+    {
+      storeDatabase(key, dbObj[key]);
+    });
+
+    // Store index
+    fs.writeFileSync(ENGINE.Database.path + ENGINE.Database.index, JSON.stringify(keys));
+
     ENGINE.Database._dirty = false;
   };
 
@@ -52,11 +61,11 @@ var zlib = require("zlib");
 
   ENGINE.Database.load = function()
   {
-    if (fs.existsSync(ENGINE.Database.path + ENGINE.Database.file))
+    if (fs.existsSync(ENGINE.Database.path + ENGINE.Database.index))
     {
-      var data = fs.readFileSync(ENGINE.Database.path + ENGINE.Database.file);
-      var string = zlib.inflateSync(data);
-      dbObj = JSON.parse(string);
+      var data = fs.readFileSync(ENGINE.Database.path + ENGINE.Database.index);
+      data = JSON.parse(data);
+      data.forEach(loadDatabase);
     }
     else
     {
@@ -89,6 +98,34 @@ var zlib = require("zlib");
   {
     return dbObj[key];
   };
+
+  function loadDatabase(name)
+  {
+    var file = ENGINE.Database.path + ENGINE.Database.subdir + name + ENGINE.Database.extension;
+    if (fs.existsSync(file))
+    {
+      var data = fs.readFileSync(file);
+      var string = zlib.inflateSync(data);
+      dbObj[name] = JSON.parse(string);
+    }
+    else
+    {
+      dbObj[name] = {};
+    }
+  }
+
+  function storeDatabase(name, data)
+  {
+    var file = ENGINE.Database.path + ENGINE.Database.subdir + name + ENGINE.Database.extension;
+
+    // Create paths
+    if (!fs.existsSync(ENGINE.Database.path)) fs.mkdirSync(ENGINE.Database.path);
+    if (!fs.existsSync(ENGINE.Database.path + ENGINE.Database.subdir)) fs.mkdirSync(ENGINE.Database.path + ENGINE.Database.subdir);
+
+    data = JSON.stringify(data);
+    data = zlib.deflateSync(data);
+    fs.writeFileSync(file, data);
+  }
 
   function storageWorker()
   {
