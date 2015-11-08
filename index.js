@@ -61,6 +61,12 @@ socket.on('connection', function(socket)
 
     console.info(client.name + ': ' + data);
 
+    ENGINE.Database.set("chat", Date.now(),
+    {
+      name: client.name,
+      message: data
+    });
+
     clients.broadcast("chatmessage",
     {
       name: client.name,
