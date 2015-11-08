@@ -34,7 +34,6 @@
 
     this.fromJSON = function(object)
     {
-      this.name = object.name;
       this.matrix = object.matrix;
       this.privateKey = object.privateKey;
       this.publicKey = object.publicKey;

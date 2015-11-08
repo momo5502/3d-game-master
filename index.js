@@ -18,7 +18,7 @@ webserver.init(function()
 function generateStates(client)
 {
   var states = [];
-  for (var i = 0; i < clients.length; i++)
+  for (var i = 0; i < clients.length && client.authenticated; i++)
   {
     if (clients[i] != client && clients[i].authenticated)
     {
@@ -164,6 +164,13 @@ socket.on('connection', function(socket)
 
     client.privateKey = data.userKey;
     client.publicKey = data.key;
+    client.authenticated = true;
+
+    clients.broadcast("user_connect",
+    {
+      name: client.name,
+      id: client.id
+    }, client);
 
     ENGINE.Database.set("user", client.name, client.toJSON());
   });
