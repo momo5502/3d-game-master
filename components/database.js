@@ -108,6 +108,8 @@ var zlib = require("zlib");
   ENGINE.Database.get = function(db, key)
   {
     db = db.toLowerCase();
+
+    if(key === undefined) return dbObj[db];
     if (dbObj[db] === undefined) return undefined;
     return dbObj[db][key];
   };

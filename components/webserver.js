@@ -24,6 +24,21 @@ var http = require('http');
       res.send('Nothing here!');
     });
 
+    this.app.get('/chat', function(req, res)
+    {
+      var response = "";
+      var chatlog = ENGINE.Database.get("chat");
+
+      Object.keys(chatlog).forEach(function(ts)
+      {
+        var user = chatlog[ts].name;
+        var data = chatlog[ts].message;
+        response += user + ": " + data + "<br>\n";
+      });
+
+      res.send(response);
+    });
+
     this.http.listen(this.port, function()
     {
       console.log('Webserver listening on port ' + self.port);
