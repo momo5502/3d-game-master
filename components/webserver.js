@@ -4,6 +4,8 @@ var http = require('http');
 (function()
 {
   "use strict";
+  root.ENGINE = root.ENGINE ||
+  {};
 
   function Webserver(port)
   {
@@ -25,9 +27,9 @@ var http = require('http');
     this.http.listen(this.port, function()
     {
       console.log('Webserver listening on port ' + self.port);
-      if(callback !== undefined) callback.call(self);
+      if (callback !== undefined) callback.call(self);
     });
   };
 
-  root.Webserver = Webserver;
+  root.ENGINE.Webserver = Webserver;
 })();

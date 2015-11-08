@@ -3,6 +3,8 @@ var io = require('socket.io');
 (function()
 {
   "use strict";
+  root.ENGINE = root.ENGINE ||
+  {};
 
   function Socket()
   {
@@ -38,5 +40,5 @@ var io = require('socket.io');
     return this.io !== undefined;
   }
 
-  root.Socket = Socket;
+  root.ENGINE.Socket = Socket;
 })();

@@ -1,6 +1,8 @@
 (function()
 {
   "use strict";
+  root.ENGINE = root.ENGINE ||
+  {};
 
   root.clients = new Array();
 
@@ -17,6 +19,15 @@
     {
       var i = clients.indexOf(this);
       clients.splice(i, 1);
+    };
+
+    this.toJSON = function()
+    {
+      return {
+        name: this.name,
+        id: this.id,
+        matrix: this.matrix,
+      };
     };
 
     socket.clientObj = this;
@@ -48,5 +59,5 @@
     }
   }
 
-  root.Client = Client;
+  root.ENGINE.Client = Client;
 })();

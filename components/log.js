@@ -3,10 +3,10 @@
   "use strict";
   var clc = require('cli-color');
 
-  var _log = console.log;
-  var _warn = console.warn;
-  var _info = console.info;
-  var _error = console.error;
+  console.logNative = console.log;
+  console.warnNative = console.warn;
+  console.infoNative = console.info;
+  console.errorNative = console.error;
 
   function formatTimeNum(number)
   {
@@ -32,21 +32,21 @@
 
   console.log = function(message)
   {
-    _log(logTimestamp() + message);
+    console.logNative(logTimestamp() + message);
   }
 
   console.warn = function(message)
   {
-    _warn(clc.yellowBright(logTimestamp() + message));
+    console.warnNative(clc.yellowBright(logTimestamp() + message));
   }
 
   console.info = function(message)
   {
-    _info(clc.cyanBright(logTimestamp() + message));
+    console.infoNative(clc.cyanBright(logTimestamp() + message));
   }
 
   console.error = function(message)
   {
-    _error(clc.redBright(logTimestamp() + message));
+    console.errorNative(clc.redBright(logTimestamp() + message));
   }
 })();

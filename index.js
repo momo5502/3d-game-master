@@ -3,8 +3,12 @@ require('require-dir')("components");
 
 console.info("3D-Game-Master starting...");
 
-var socket = new Socket();
-var webserver = new Webserver(88);
+// Prepare and load database
+ENGINE.Database.init();
+
+// Initialize webserver and socket
+var socket = new ENGINE.Socket();
+var webserver = new ENGINE.Webserver(88);
 webserver.init(function()
 {
   socket.bind(this);
@@ -31,7 +35,7 @@ function generateStates(client)
 
 socket.on('connection', function(socket)
 {
-  var client = new Client(socket);
+  var client = new ENGINE.Client(socket);
 
   console.log('User connected: ' + client.id);
 
@@ -69,6 +73,8 @@ socket.on('connection', function(socket)
   {
     if (!client.authenticated) return;
     client.matrix = data;
+
+    ENGINE.Database.set("user", client.name, client.toJSON());
   });
 
   socket.on('authenticate', function(data)
@@ -78,6 +84,8 @@ socket.on('connection', function(socket)
     console.log('User authenticated: ' + client.id + " as " + data);
     client.name = data;
     client.authenticated = true;
+
+    ENGINE.Database.set("user", client.name, client.toJSON());
 
     clients.broadcast("user_connect",
     {
