@@ -109,7 +109,7 @@ var zlib = require("zlib");
   {
     db = db.toLowerCase();
 
-    if(key === undefined) return dbObj[db];
+    if (key === undefined) return dbObj[db];
     if (dbObj[db] === undefined) return undefined;
     return dbObj[db][key];
   };

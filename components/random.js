@@ -16,7 +16,7 @@
   {
     var string = "";
 
-    for(var i = 0; i < length;i++)
+    for (var i = 0; i < length; i++)
     {
       string += String.fromCharCode(ENGINE.random.int(256));
     }

@@ -80,7 +80,7 @@ socket.on('connection', function(socket)
     if (!client.authenticated) return;
     client.matrix = data;
 
-    ENGINE.Database.set("user", client.name, client.toJSON());
+    //ENGINE.Database.set("user", client.name, client.toJSON());
   });
 
   socket.on('authenticate', function(data)
@@ -106,6 +106,11 @@ socket.on('connection', function(socket)
     }
     else
     {
+      if (data.privateKey === undefined)
+      {
+        console.error("User " + client.name + " authentication failed, no private key stored!");
+      }
+
       socket.emit('authenticate_response',
       {
         success: true,
@@ -118,6 +123,8 @@ socket.on('connection', function(socket)
 
   socket.on('authentication', function(data)
   {
+    if (client.authenticated) return;
+
     var c_data = ENGINE.Database.get("user", client.name);
 
     if (c_data !== undefined)
@@ -145,6 +152,8 @@ socket.on('connection', function(socket)
 
   socket.on('registration', function(data)
   {
+    if (client.authenticated) return;
+
     if (ENGINE.Database.get("user", client.name) !== undefined)
     {
       console.warn("Registration for user " + client.name + " failed, user already exists!");
