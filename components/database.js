@@ -18,7 +18,7 @@ var zlib = require("zlib");
 
   var worker = undefined;
   var initialized = false;
-  ENGINE.Database._dirty = true;
+  ENGINE.Database._dirty = [];
 
   ENGINE.Database.init = function()
   {
@@ -31,7 +31,6 @@ var zlib = require("zlib");
     worker = setInterval(storageWorker, 10000);
 
     console.log("Database initialized");
-    console.logNative(dbObj);
   };
 
   ENGINE.Database.store = function()
@@ -42,21 +41,32 @@ var zlib = require("zlib");
     }
 
     // Store databases
-    var keys = Object.keys(dbObj);
-    keys.forEach(function(key)
+    ENGINE.Database._dirty.forEach(function(key)
     {
       storeDatabase(key, dbObj[key]);
     });
 
-    // Store index
-    fs.writeFileSync(ENGINE.Database.path + ENGINE.Database.index, JSON.stringify(keys));
+    ENGINE.Database._dirty = [];
 
-    ENGINE.Database._dirty = false;
+    // Store index
+    fs.writeFileSync(ENGINE.Database.path + ENGINE.Database.index, JSON.stringify(Object.keys(dbObj)));
   };
 
-  ENGINE.Database.markDirty = function()
+  ENGINE.Database.markDirty = function(db)
   {
-    ENGINE.Database._dirty = true;
+    if (db == undefined)
+    {
+      ENGINE.Database._dirty = Object.keys(dbObj);
+    }
+    else
+    {
+      db = db.toLowerCase();
+
+      if (ENGINE.Database._dirty.indexOf(db) == -1)
+      {
+        ENGINE.Database._dirty.push(db);
+      }
+    }
   }
 
   ENGINE.Database.load = function()
@@ -83,24 +93,28 @@ var zlib = require("zlib");
   };
 
   // Data manipulation
-  ENGINE.Database.set = function(db, table, value)
+  ENGINE.Database.set = function(db, key, value)
   {
+    db = db.toLowerCase();
     if (dbObj[db] === undefined)
     {
       dbObj[db] = {};
     }
 
-    dbObj[db][table] = value;
-    ENGINE.Database.markDirty();
+    dbObj[db][key] = value;
+    ENGINE.Database.markDirty(db);
   };
 
-  ENGINE.Database.get = function(key)
+  ENGINE.Database.get = function(db, key)
   {
-    return dbObj[key];
+    db = db.toLowerCase();
+    if (dbObj[db] === undefined) return undefined;
+    return dbObj[db][key];
   };
 
   function loadDatabase(name)
   {
+    name = name.toLowerCase();
     var file = ENGINE.Database.path + ENGINE.Database.subdir + name + ENGINE.Database.extension;
     if (fs.existsSync(file))
     {
@@ -116,6 +130,7 @@ var zlib = require("zlib");
 
   function storeDatabase(name, data)
   {
+    name = name.toLowerCase();
     var file = ENGINE.Database.path + ENGINE.Database.subdir + name + ENGINE.Database.extension;
 
     // Create paths
@@ -129,9 +144,7 @@ var zlib = require("zlib");
 
   function storageWorker()
   {
-    if (ENGINE.Database._dirty)
-    {
-      ENGINE.Database.store();
-    }
+    ENGINE.Database.markDirty();
+    ENGINE.Database.store();
   }
 })();
