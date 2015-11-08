@@ -12,6 +12,7 @@
     this.id = this.socket.id;
     this.authenticated = false;
     this.matrix = null;
+    this.session = null;
 
     root.clients.push(this);
 
@@ -19,6 +20,11 @@
     {
       var i = clients.indexOf(this);
       clients.splice(i, 1);
+    };
+
+    this.hasSession = function()
+    {
+      return (this.session !== undefined);
     };
 
     this.toJSON = function()
