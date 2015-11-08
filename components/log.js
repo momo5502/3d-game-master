@@ -33,20 +33,25 @@
   console.log = function(message)
   {
     console.logNative(logTimestamp() + message);
-  }
+  };
 
   console.warn = function(message)
   {
     console.warnNative(clc.yellowBright(logTimestamp() + message));
-  }
+  };
 
   console.info = function(message)
   {
     console.infoNative(clc.cyanBright(logTimestamp() + message));
-  }
+  };
 
   console.error = function(message)
   {
     console.errorNative(clc.redBright(logTimestamp() + message));
-  }
+  };
+
+  console.success = function(message)
+  {
+    console.infoNative(clc.greenBright(logTimestamp() + message));
+  };
 })();

@@ -87,17 +87,85 @@ socket.on('connection', function(socket)
   {
     if (client.authenticated) return;
 
-    console.log('User authenticated: ' + client.id + " as " + data);
+    console.log('User requests authentication: ' + client.id + " as " + data);
     client.name = data;
-    client.authenticated = true;
+    //client.authenticated = true;
+
+    var data = ENGINE.Database.get("user", client.name);
+
+    // Generate authentication/registration token
+    client.token = ENGINE.random.string64(0x40);
+
+    if (data == undefined)
+    {
+      socket.emit('authenticate_response',
+      {
+        success: false,
+        token: client.token,
+      });
+    }
+    else
+    {
+      socket.emit('authenticate_response',
+      {
+        success: true,
+        token: client.token,
+        key: data.privateKey
+      });
+    }
+  });
+
+
+  socket.on('authentication', function(data)
+  {
+    var c_data = ENGINE.Database.get("user", client.name);
+
+    if (c_data !== undefined)
+    {
+      var key = new ENGINE.crypto.rsa.key();
+      key.setPublicPEM(c_data.publicKey);
+
+      if (!ENGINE.crypto.rsa.verify(key, client.token, data.signature))
+      {
+        console.warn("Authentication failed, signature invalid (" + client.name + ")!");
+        return;
+      }
+
+      console.success("Signature valid, finalizing authentication (" + client.name + ")!");
+      client.fromJSON(data);
+      client.authenticated = true;
+
+      clients.broadcast("user_connect",
+      {
+        name: client.name,
+        id: client.id
+      }, client);
+    }
+  });
+
+  socket.on('registration', function(data)
+  {
+    if (ENGINE.Database.get("user", client.name) !== undefined)
+    {
+      console.warn("Registration for user " + client.name + " failed, user already exists!");
+      return;
+    }
+
+    var key = new ENGINE.crypto.rsa.key();
+    key.setPublicPEM(data.key);
+
+    if (!ENGINE.crypto.rsa.verify(key, client.token, data.signature))
+    {
+      console.warn("Registration failed, signature invalid (" + client.name + ")!");
+      return;
+    }
+
+    console.success("Signature valid, finalizing registration (" + client.name + ")!");
+
+    client.privateKey = data.userKey;
+    client.publicKey = data.key;
 
     ENGINE.Database.set("user", client.name, client.toJSON());
-
-    clients.broadcast("user_connect",
-    {
-      name: client.name,
-      id: client.id
-    }, client);
   });
 });
 

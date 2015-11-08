@@ -27,7 +27,17 @@
         name: this.name,
         id: this.id,
         matrix: this.matrix,
+        privateKey: this.privateKey,
+        publicKey: this.publicKey,
       };
+    };
+
+    this.fromJSON = function(object)
+    {
+      this.name = object.name;
+      this.matrix = object.matrix;
+      this.privateKey = object.privateKey;
+      this.publicKey = object.publicKey;
     };
 
     socket.clientObj = this;
