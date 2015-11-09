@@ -132,10 +132,6 @@ var zlib = require("zlib");
       var string = zlib.inflateSync(data);
       dbObj[name] = JSON.parse(string);
     }
-    else
-    {
-      dbObj[name] = {};
-    }
   }
 
   function storeDatabase(name, data)
