@@ -98,10 +98,13 @@ socket.on('connection', function(socket)
 
     if (data == undefined)
     {
+      client.salt = ENGINE.random.string64(0x20);
+
       socket.emit('authenticate_response',
       {
         success: false,
         token: client.token,
+        salt: client.salt,
       });
     }
     else
@@ -115,7 +118,8 @@ socket.on('connection', function(socket)
       {
         success: true,
         token: client.token,
-        key: data.privateKey
+        key: data.privateKey,
+        salt: data.salt,
       });
     }
   });

@@ -33,6 +33,7 @@
         name: this.name,
         //id: this.id,
         //matrix: this.matrix,
+        salt: this.salt,
         privateKey: this.privateKey,
         publicKey: this.publicKey,
       };
@@ -41,6 +42,7 @@
     this.fromJSON = function(object)
     {
       //this.matrix = object.matrix;
+      this.salt = object.salt;
       this.privateKey = object.privateKey;
       this.publicKey = object.publicKey;
     };
