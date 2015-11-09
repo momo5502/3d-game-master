@@ -6,6 +6,8 @@ console.info("3D-Game-Master starting...");
 // Prepare and load database
 ENGINE.Database.init();
 
+ENGINE.sessions.load();
+
 // Initialize webserver and socket
 var socket = new ENGINE.Socket();
 var webserver = new ENGINE.Webserver(88);
@@ -83,15 +85,22 @@ socket.on('connection', function(socket)
     //ENGINE.Database.set("user", client.name, client.toJSON());
   });
 
-  socket.on('authenticate', function(data)
+  socket.on('authenticate', function(_data)
   {
     if (client.authenticated) return;
 
-    console.log('User requests authentication: ' + client.id + " as " + data);
-    client.name = data;
+    console.log('User requests authentication: ' + client.id + " as " + _data.user);
+    client.name = _data.user;
     //client.authenticated = true;
 
     var data = ENGINE.Database.get("user", client.name);
+
+    if (parseSession(client, data, _data))
+    {
+      return;
+    }
+
+    console.info("Performing new authentication for user: " + client.name + "!");
 
     // Generate authentication/registration token
     client.token = ENGINE.random.string64(0x40);
@@ -124,7 +133,6 @@ socket.on('connection', function(socket)
     }
   });
 
-
   socket.on('authentication', function(data)
   {
     if (client.authenticated) return;
@@ -146,6 +154,16 @@ socket.on('connection', function(socket)
       client.fromJSON(data);
       client.authenticated = true;
 
+      // Create session
+      var session = new ENGINE.session(client);
+      session.activate();
+
+      socket.emit('authenticate_session',
+      {
+        success: true,
+        session: session.token
+      });
+
       clients.broadcast("user_connect",
       {
         name: client.name,
@@ -164,6 +182,8 @@ socket.on('connection', function(socket)
       return;
     }
 
+    console.info("Registering user: " + client.name + "!");
+
     var key = new ENGINE.crypto.rsa.key();
     key.setPublicPEM(data.key);
 
@@ -179,6 +199,16 @@ socket.on('connection', function(socket)
     client.publicKey = data.key;
     client.authenticated = true;
 
+    // Create session
+    var session = new ENGINE.session(client);
+    session.activate();
+
+    socket.emit('authenticate_session',
+    {
+      success: true,
+      session: session.token
+    });
+
     clients.broadcast("user_connect",
     {
       name: client.name,
@@ -188,6 +218,51 @@ socket.on('connection', function(socket)
     ENGINE.Database.set("user", client.name, client.toJSON());
   });
 });
+
+function parseSession(client, data, _data)
+{
+  if (_data.session === undefined)
+  {
+    console.warn("No session token provided, reauthenticating...");
+    return false;
+  }
+
+  var session = ENGINE.sessions.getByToken(_data.session);
+
+  if (session === undefined)
+  {
+    console.warn("No session found for given token (" + client.name + ")!");
+    return false;
+  }
+
+  if (!session.isValid())
+  {
+    console.warn("Session for given token was invalid (" + client.name + ")!");
+  }
+
+  if (session.client != client.name) // TODO: Check for valid ip as well
+  {
+    console.warn("Session is not valid for this client (" + client.name + ")!");
+  }
+
+  console.success("Authenticated with session (" + client.name + ")!");
+
+  client.authenticated = true;
+
+  client.socket.emit('authenticate_session',
+  {
+    success: true,
+    session: session.token
+  });
+
+  clients.broadcast("user_connect",
+  {
+    name: client.name,
+    id: client.id
+  }, client);
+
+  return true;
+}
 
 setInterval(function()
 {

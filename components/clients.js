@@ -24,8 +24,13 @@
 
     this.hasSession = function()
     {
-      return (this.session !== undefined);
+      return (this.session !== undefined && this.session !== null);
     };
+
+    this.hasValidSession = function()
+    {
+      return (this.hasSession() && this.session.isValid());
+    }
 
     this.toJSON = function()
     {
