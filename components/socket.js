@@ -40,5 +40,5 @@ var io = require('socket.io');
     return this.io !== undefined;
   }
 
-  root.ENGINE.Socket = Socket;
+  ENGINE.socket = Socket;
 })();

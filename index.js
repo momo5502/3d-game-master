@@ -4,13 +4,13 @@ require('require-dir')("components");
 console.info("3D-Game-Master starting...");
 
 // Prepare and load database
-ENGINE.Database.init();
+ENGINE.database.init();
 
 ENGINE.sessions.load();
 
 // Initialize webserver and socket
-var socket = new ENGINE.Socket();
-var webserver = new ENGINE.Webserver(88);
+var socket = new ENGINE.socket();
+var webserver = new ENGINE.webserver(88);
 webserver.init(function()
 {
   socket.bind(this);
@@ -20,14 +20,14 @@ webserver.init(function()
 function generateStates(client)
 {
   var states = [];
-  for (var i = 0; i < clients.length && client.authenticated; i++)
+  for (var i = 0; i < ENGINE.clients.length && client.authenticated; i++)
   {
-    if (clients[i] != client && clients[i].authenticated)
+    if (ENGINE.clients[i] != client && ENGINE.clients[i].authenticated)
     {
       var state = {};
-      state.matrix = clients[i].matrix;
-      state.id = clients[i].id;
-      state.name = clients[i].name;
+      state.matrix = ENGINE.clients[i].matrix;
+      state.id = ENGINE.clients[i].id;
+      state.name = ENGINE.clients[i].name;
       states.push(state);
     }
   }
@@ -37,7 +37,7 @@ function generateStates(client)
 
 socket.on('connection', function(socket)
 {
-  var client = new ENGINE.Client(socket);
+  var client = new ENGINE.client(socket);
 
   console.log('User connected: ' + client.id);
 
@@ -47,7 +47,7 @@ socket.on('connection', function(socket)
 
     if (client.authenticated)
     {
-      clients.broadcast("user_disconnect",
+      ENGINE.clients.broadcast("user_disconnect",
       {
         name: client.name,
         id: client.id
@@ -63,13 +63,13 @@ socket.on('connection', function(socket)
 
     console.info(client.name + ': ' + data);
 
-    ENGINE.Database.set("chat", Date.now(),
+    ENGINE.database.set("chat", Date.now(),
     {
       name: client.name,
       message: data
     });
 
-    clients.broadcast("chatmessage",
+    ENGINE.clients.broadcast("chatmessage",
     {
       name: client.name,
       id: client.id,
@@ -82,7 +82,7 @@ socket.on('connection', function(socket)
     if (!client.authenticated) return;
     client.matrix = data;
 
-    //ENGINE.Database.set("user", client.name, client.toJSON());
+    //ENGINE.database.set("user", client.name, client.toJSON());
   });
 
   socket.on('authenticate', function(_data)
@@ -93,7 +93,7 @@ socket.on('connection', function(socket)
     client.name = _data.user;
     //client.authenticated = true;
 
-    var data = ENGINE.Database.get("user", client.name);
+    var data = ENGINE.database.get("user", client.name);
 
     if (parseSession(client, data, _data))
     {
@@ -137,7 +137,7 @@ socket.on('connection', function(socket)
   {
     if (client.authenticated) return;
 
-    var c_data = ENGINE.Database.get("user", client.name);
+    var c_data = ENGINE.database.get("user", client.name);
 
     if (c_data !== undefined)
     {
@@ -164,7 +164,7 @@ socket.on('connection', function(socket)
         session: session.token
       });
 
-      clients.broadcast("user_connect",
+      ENGINE.clients.broadcast("user_connect",
       {
         name: client.name,
         id: client.id
@@ -176,7 +176,7 @@ socket.on('connection', function(socket)
   {
     if (client.authenticated) return;
 
-    if (ENGINE.Database.get("user", client.name) !== undefined)
+    if (ENGINE.database.get("user", client.name) !== undefined)
     {
       console.warn("Registration for user " + client.name + " failed, user already exists!");
       return;
@@ -209,13 +209,13 @@ socket.on('connection', function(socket)
       session: session.token
     });
 
-    clients.broadcast("user_connect",
+    ENGINE.clients.broadcast("user_connect",
     {
       name: client.name,
       id: client.id
     }, client);
 
-    ENGINE.Database.set("user", client.name, client.toJSON());
+    ENGINE.database.set("user", client.name, client.toJSON());
   });
 });
 
@@ -255,7 +255,7 @@ function parseSession(client, data, _data)
     session: session.token
   });
 
-  clients.broadcast("user_connect",
+  ENGINE.clients.broadcast("user_connect",
   {
     name: client.name,
     id: client.id
@@ -266,5 +266,5 @@ function parseSession(client, data, _data)
 
 setInterval(function()
 {
-  clients.broadcast("playerstates", generateStates);
+  ENGINE.clients.broadcast("playerstates", generateStates);
 }, 1000 / 60);

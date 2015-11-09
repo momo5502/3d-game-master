@@ -4,7 +4,7 @@
   root.ENGINE = root.ENGINE ||
   {};
 
-  root.clients = new Array();
+  ENGINE.clients = new Array();
 
   function Client(socket)
   {
@@ -14,12 +14,12 @@
     this.matrix = null;
     this.session = null;
 
-    root.clients.push(this);
+    ENGINE.clients.push(this);
 
     this.remove = function()
     {
-      var i = clients.indexOf(this);
-      clients.splice(i, 1);
+      var i = ENGINE.clients.indexOf(this);
+      ENGINE.clients.splice(i, 1);
     };
 
     this.hasSession = function()
@@ -55,7 +55,7 @@
     socket.clientObj = this;
   }
 
-  clients.broadcast = function(event, data, exceptions)
+  ENGINE.clients.broadcast = function(event, data, exceptions)
   {
     if (exceptions === undefined)
     {
@@ -66,20 +66,20 @@
       exceptions = [exceptions];
     }
 
-    for (var i = 0; i < clients.length; i++)
+    for (var i = 0; i < ENGINE.clients.length; i++)
     {
       var _data = data;
-      if (exceptions.indexOf(clients[i]) == -1)
+      if (exceptions.indexOf(ENGINE.clients[i]) == -1)
       {
         if (typeof data === 'function')
         {
-          _data = data(clients[i]);
+          _data = data(ENGINE.clients[i]);
         }
 
-        clients[i].socket.emit(event, _data);
+        ENGINE.clients[i].socket.emit(event, _data);
       }
     }
   }
 
-  root.ENGINE.Client = Client;
+  ENGINE.client = Client;
 })();

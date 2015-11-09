@@ -27,7 +27,7 @@ var http = require('http');
     this.app.get('/chat', function(req, res)
     {
       var response = "";
-      var chatlog = ENGINE.Database.get("chat");
+      var chatlog = ENGINE.database.get("chat");
 
       Object.keys(chatlog).forEach(function(ts)
       {
@@ -46,5 +46,5 @@ var http = require('http');
     });
   };
 
-  root.ENGINE.Webserver = Webserver;
+  ENGINE.webserver = Webserver;
 })();

@@ -23,30 +23,49 @@
 
   ENGINE.sessions.store = function()
   {
-    // TODO: Store in database
+    ENGINE.database.set("session", this);
   };
 
   ENGINE.sessions.load = function()
   {
-    // TODO: Load from database
+    var sessions = ENGINE.database.get("session");
+
+    if (sessions !== undefined)
+    {
+      sessions.forEach(function(session)
+      {
+        new ENGINE.session().fromJSON(session);
+      });
+    }
   };
 
   ENGINE.sessions.remove = function(session)
   {
-    // TODO: Delete form database
+    var pos = this.indexOf(session);
+    if (pos != -1)
+    {
+      this.splice(pos, 1);
+    }
+
+    session.client.session = undefined;
+
+    ENGINE.sessions.store();
   };
 
   ENGINE.session = function(client)
   {
-    if (client.hasSession())
+    if (client !== undefined)
     {
-      client.session.remove();
+      if (client.hasSession())
+      {
+        client.session.remove();
+      }
+
+      client.session = this;
+      this.client = client.name; // TODO: Don't use the name here
     }
 
-    client.session = this;
-
     this.token = ENGINE.random.string64(0x40);
-    this.client = client.name; // TODO: Don't use the name here
     this.issueDate = Date.now();
     this.expires = (1000 * 60 * 60 * 24 * 30); // Session valid for a month
     this.activated = false;
@@ -55,7 +74,7 @@
     {
       this.activated = true;
 
-      // TODO: Set activation state in database
+      ENGINE.sessions.store();
     };
 
     this.remove = function()
@@ -66,6 +85,7 @@
     this.setDuration = function(duration)
     {
       this.expires = duration;
+      ENGINE.sessions.store();
     };
 
     this.hasExpired = function()
@@ -87,7 +107,7 @@
     {
       return {
         token: this.token,
-        client: this.client.name,
+        client: this.client,
         issueDate: this.issueDate,
         expires: this.expires,
         activated: this.activated
@@ -97,12 +117,15 @@
     this.fromJSON = function(object)
     {
       this.token = object.token;
-      this.client = object.client.name; // TODO: Don't use the name
+      this.client = object.client; // TODO: Don't use the name
       this.issueDate = object.issueDate;
       this.expires = object.expires;
       this.activated = object.activated;
+
+      ENGINE.sessions.store();
     };
 
     ENGINE.sessions.push(this);
+    ENGINE.sessions.store();
   };
 })();
