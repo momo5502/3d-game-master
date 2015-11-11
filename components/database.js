@@ -1,5 +1,6 @@
 var fs = require("fs");
 var zlib = require("zlib");
+var mkdirp = require('mkdirp');
 
 (function()
 {
@@ -37,7 +38,7 @@ var zlib = require("zlib");
   {
     if (!fs.existsSync(ENGINE.database.path))
     {
-      fs.mkdirSync(ENGINE.database.path);
+      mkdirp.sync(ENGINE.database.path);
     }
 
     // Store databases
@@ -140,8 +141,7 @@ var zlib = require("zlib");
     var file = ENGINE.database.path + ENGINE.database.subdir + name + ENGINE.database.extension;
 
     // Create paths
-    if (!fs.existsSync(ENGINE.database.path)) fs.mkdirSync(ENGINE.database.path);
-    if (!fs.existsSync(ENGINE.database.path + ENGINE.database.subdir)) fs.mkdirSync(ENGINE.database.path + ENGINE.database.subdir);
+    if (!fs.existsSync(ENGINE.database.path + ENGINE.database.subdir)) mkdirp.sync(ENGINE.database.path + ENGINE.database.subdir);
 
     data = JSON.stringify(data);
     data = zlib.deflateSync(data);
