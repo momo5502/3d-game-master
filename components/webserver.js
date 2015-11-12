@@ -29,13 +29,16 @@ var http = require('http');
       var response = "";
       var chatlog = ENGINE.database.get("chat");
 
-      Object.keys(chatlog).forEach(function(ts)
+      if (chatlog !== undefined)
       {
-        var user = chatlog[ts].name;
-        var data = chatlog[ts].message;
-        response += user + ": " + data + "<br>\n";
-      });
-
+        Object.keys(chatlog).forEach(function(ts)
+        {
+          var user = chatlog[ts].name;
+          var data = chatlog[ts].message;
+          response += user + ": " + data + "<br>\n";
+        });
+      }
+      
       res.send(response);
     });
 
