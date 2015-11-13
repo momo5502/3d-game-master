@@ -38,7 +38,7 @@ var http = require('http');
           response += user + ": " + data + "<br>\n";
         });
       }
-      
+
       res.send(response);
     });
 
