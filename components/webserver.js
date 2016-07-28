@@ -4,7 +4,7 @@ var http = require('http');
 (function()
 {
   "use strict";
-  root.ENGINE = root.ENGINE ||
+  global.ENGINE = global.ENGINE ||
   {};
 
   function Webserver(port)

@@ -5,7 +5,7 @@ var mkdirp = require('mkdirp');
 (function()
 {
   "use strict";
-  root.ENGINE = root.ENGINE ||
+  global.ENGINE = global.ENGINE ||
   {};
 
   var dbObj = {}; // initialize as object to be able to access/store JSON as associative array

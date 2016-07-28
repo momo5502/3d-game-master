@@ -3,7 +3,7 @@ var io = require('socket.io');
 (function()
 {
   "use strict";
-  root.ENGINE = root.ENGINE ||
+  global.ENGINE = global.ENGINE ||
   {};
 
   function Socket()

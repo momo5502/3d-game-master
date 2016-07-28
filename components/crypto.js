@@ -11,7 +11,7 @@ r.RSAKey.prototype.readPublicKeyFromPEMString = function(string)
 (function()
 {
   'use strict';
-  root.ENGINE = root.ENGINE ||
+  global.ENGINE = global.ENGINE ||
   {};
 
   ENGINE.crypto = {};

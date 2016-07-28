@@ -1,7 +1,7 @@
 (function()
 {
   "use strict";
-  root.ENGINE = root.ENGINE ||
+  global.ENGINE = global.ENGINE ||
   {};
 
   var callbacks = [];
